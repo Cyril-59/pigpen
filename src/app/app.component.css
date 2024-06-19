@@ -1,0 +1,184 @@
+.body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: large;
+}
+
+.menu {
+  display: flex;
+  width: 40%;
+  justify-content: space-evenly;
+}
+
+.letter {
+  background: url("../../public/letters.png");
+  display: inline-block;
+  height: 302px;
+  width: 266px;
+}
+
+.line {
+  height: 302px;
+}
+
+.title {
+  margin-bottom: 20px;
+}
+
+.shift {
+  margin-left: -33px;
+}
+
+.vshift {
+  margin-top: -33px;
+}
+
+.jump {
+  border: grey solid 2px;
+  display: inline-block;
+  margin: 20px 0;
+  width: 100%;
+}
+
+.jumpwhite {
+  margin-top: 20px;
+}
+
+.empty {
+  filter: opacity(0%);
+}
+
+.generate {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+  width: 100%;
+}
+
+.subgenerate {
+  margin-top: 20px;
+  border: grey solid 1px;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  opacity: 1;
+  -webkit-transition: opacity 500ms linear;
+  transition: opacity 500ms linear;
+}
+
+.word {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+}
+
+.center {
+  text-align: center;
+  font-size: xx-large;
+}
+
+.A {
+  background-position: -667px 0;
+}
+
+.B {
+  background-position: -334px 0;
+}
+
+.C {
+  background-position: -1px 0;
+}
+
+.D {
+  background-position: -1666px 0;
+}
+
+.E {
+   background-position: -1333px 0;
+}
+
+.F {
+  background-position: -1000px 0;
+}
+
+.G {
+  background-position: -2666px 0;
+}
+
+.H {
+  background-position: -2333px 0;
+}
+
+.I {
+  background-position: -2000px 0;
+}
+
+.J {
+  background-position: -3666px 0;
+}
+
+.K {
+  background-position: -3333px 0;
+}
+
+.L {
+  background-position: -2999px 0;
+}
+
+.M {
+  background-position: -4665px 0;
+}
+
+.N {
+  background-position: -4332px 0;
+}
+
+.O {
+  background-position: -3999px 0;
+}
+
+.P {
+  background-position: -5665px 0;
+}
+
+.Q {
+  background-position: -5332px 0;
+}
+
+.R {
+  background-position: -4999px 0;
+}
+
+.S {
+  background-position: -6992px 0;
+}
+
+.T {
+  background-position: -6656px 0;
+}
+
+.U {
+  background-position: -5999px 0;
+}
+
+.V {
+  background-position: -6340px 0;
+}
+
+.W {
+  background-position: -8324px 0;
+}
+
+.X {
+  background-position: -7988px 0;
+}
+
+.Y {
+  background-position: -7331px 0;
+}
+
+.Z {
+  background-position: -7672px 0;
+}

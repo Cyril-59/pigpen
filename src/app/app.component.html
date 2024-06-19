@@ -1,0 +1,60 @@
+<div class="body">
+  <h1>PIGPEN GENERATOR</h1>
+  <div class="menu">
+    <div>
+      Word :
+      <input type="text" [(ngModel)]="lettres" (ngModelChange)="lettres = lettres.toUpperCase(); doubleArray.length = 0; array.length = 0; chiffres = ''">
+    </div>
+    <button (click)="generate()" [disabled]="lettres.length <= 1 || lettres.length >= 6">Generate</button>
+    <div>
+      Specific positions :
+      <input type="text" [(ngModel)]="chiffres" (ngModelChange)="fillArray()">
+    </div>
+  </div>
+  <div class="jump"></div>
+  <div>
+    @for (letter of lettres.split(''); track $index;) {
+      <span class="letter {{letter}}" [ngClass]="{ 'shift' : $index > 0 && !notShifted.includes(letter) && !notShifted.includes(lettres.at($index - 1)!), 'empty' : letter == '_'}" [title]="letter"></span>
+    }
+  </div>
+  <div class="jump"></div>
+  <div>
+    @for (word of array; track word; let vindex = $index) {
+      <div>{{ word }}</div>
+    }
+    @for (word of array; track word; let vindex = $index) {
+      <div class="line" [ngClass]="{ 'vshift' : vindex > 0}">
+        @for (letter of word.split(''); track $index;) {
+            <span class="letter {{letter}}" [ngClass]="{ 'shift' : $index > 0 && !notShifted.includes(letter) && !notShifted.includes(word.at($index - 1)!), 'empty' : letter == '_'}" [title]="letter"></span>
+        }
+      </div>
+    }
+  </div>
+  <div class="jump"></div>
+  <div class="generate" #scroll>
+    @for (list of doubleArray; track list; let dindex = $index) {
+      <div class="subgenerate" id="word{{dindex}}">
+        <div class="word">
+          <div>
+            @for (word of list; track word;) {
+              <div class="center">{{ word }}</div>
+            }
+          </div>
+          <button style="height: 20px;" (click)="delete(dindex, scroll.querySelector('#word' + dindex))">X</button>
+        </div>
+        <div>
+          @for (word of list; track word; let vindex = $index) {
+            <div class="line" [ngClass]="{ 'vshift' : vindex > 0}">
+              @for (letter of word.split(''); track $index;) {
+                <span class="letter {{letter}}" [ngClass]="{ 'shift' : $index > 0 && !notShifted.includes(letter) && !notShifted.includes(word.at($index - 1)!), 'empty' : letter == '_'}" [title]="letter"></span>
+              }
+            </div>
+          }
+        </div>
+        <div class="title"></div>
+      </div>
+      <div class="jumpwhite"></div>
+    }
+  </div>
+</div>
+<router-outlet />
