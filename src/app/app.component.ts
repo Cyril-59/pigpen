@@ -38,6 +38,7 @@ export class AppComponent implements OnInit {
   zoom: number = 0.5;
   visible = false;
   displayButtons = true;
+  displayLink = true;
 
   @ViewChild("scroll") private scrollDiv!: ElementRef;
   @ViewChildren('screen') screen!: QueryList<ElementRef>;
@@ -48,6 +49,7 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
+    //?m=ABC&i=1
     this.route.queryParamMap.subscribe(params => {
       const marque = params.get('m');
       if (marque) {
@@ -55,6 +57,7 @@ export class AppComponent implements OnInit {
         this.generate();
         const index = params.get('i');
         if (index) {
+          this.displayLink = false;
           const newIndex = +index - 1;
           this.doubleArray = this.doubleArray.slice(newIndex, newIndex + 1);
           const newMarges= new Map<string, number>();
@@ -76,14 +79,21 @@ export class AppComponent implements OnInit {
   }
 
   downloadImage(index: number, list: string[]){
-    html2canvas(this.screen.get(index)!.nativeElement, {
-      backgroundColor: null
-    }).then(canvas => {
-      this.canvas.nativeElement.src = canvas.toDataURL();
-      this.downloadLink.nativeElement.href = canvas.toDataURL('image/png');
-      this.downloadLink.nativeElement.download = 'Marque_' + this.lettres + '_' + (index + 1) + '.png';
-      this.downloadLink.nativeElement.click();
-    });
+    const zoomTmp = this.zoom;
+    this.zoom = 1;
+    setTimeout(() => {
+      html2canvas(this.screen.get(index)!.nativeElement, {
+        backgroundColor: null
+      }).then(canvas => {
+        this.canvas.nativeElement.src = canvas.toDataURL();
+        this.downloadLink.nativeElement.href = canvas.toDataURL('image/png');
+        this.downloadLink.nativeElement.download = 'Marque_' + this.lettres + '_' + (index + 1) + '.png';
+        this.downloadLink.nativeElement.click();
+        setTimeout(() => {
+          this.zoom = zoomTmp;
+        });
+      });
+    }, 100);
   }
 
   downloadAll() {
@@ -102,7 +112,7 @@ export class AppComponent implements OnInit {
           this.displayButtons = true;
         });
       });
-    }, 500);
+    }, 100);
   }
 
   fillArray() {
@@ -120,6 +130,7 @@ export class AppComponent implements OnInit {
       this.doubleArray.length = 0;
       this.marges.clear();
       this.edits.length = 0;
+      this.displayLink = true;
       let word = this.lettres;
       for (let i = 0; i < this.lettres.length; i++) {
         this.generateForWord(word);
@@ -198,5 +209,13 @@ export class AppComponent implements OnInit {
     if (newZoom >= 0.2 && newZoom <= 1) {
       this.zoom = newZoom;
     }
+  }
+
+  goToLink(index: number) {
+    let location = window.location.href;
+    if (location.includes('?')) {
+      location = location.substring(0, location.indexOf('?'));
+    }
+    window.location.href = location + '?m=' + this.lettres + '&i=' + (index + 1);
   }
 }
