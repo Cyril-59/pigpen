@@ -47,7 +47,7 @@
       </div>
     }
   </div>-->
-  @if (doubleArray.length > 0) {
+  @if (doubleArray.length > 1) {
     <div class="jump"></div>
   }
   <div [class]="!modeSolo ? 'generate' : ''" #scroll [ngStyle]="{ 'zoom': zoom, '-moz-transform': 'scale(' + zoom + ')', '-moz-transform-origin': 'top' }">
@@ -139,3 +139,8 @@
   <a #downloadLink></a>
 </div>
 <router-outlet />
+@if (loading) {
+  <div class="overlay">
+    <div class="loader"></div>
+  </div>
+}

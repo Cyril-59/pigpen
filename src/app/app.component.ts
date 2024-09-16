@@ -40,6 +40,7 @@ export class AppComponent implements OnInit {
   displayButtons = true;
   modeSolo = false;
   titreSolo = '';
+  loading = false;
 
   @ViewChild("scroll") private scrollDiv!: ElementRef;
   @ViewChildren('screen') screen!: QueryList<ElementRef>;
@@ -50,7 +51,7 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
-    //?m=ABC&i=1
+    //?m=ABC&i=1&p=...
     this.route.queryParamMap.subscribe(params => {
       const marque = params.get('m');
       if (marque) {
@@ -64,15 +65,23 @@ export class AppComponent implements OnInit {
           const newIndex = +index - 1;
           this.doubleArray = this.doubleArray.slice(newIndex, newIndex + 1);
           const newMarges= new Map<string, number>();
-          for (let marge of this.marges.keys()) {
-            if (!marge.startsWith(newIndex + ',')) {
-              this.marges.delete(marge);
-            } else {
-              const parts = marge.split(',');
-              parts[0] = '0';
-              const key = parts.join(',');
-              newMarges.set(key, <number>this.marges.get(marge));
-              this.marges.delete(marge);
+          const marges = params.get('p');
+          if (marges) {
+            marges.split('|').forEach(marge => {
+              const parts = marge.split('=');
+              newMarges.set(parts[0], +parts[1]);
+            });
+          } else {
+            for (let marge of this.marges.keys()) {
+              if (!marge.startsWith(newIndex + ',')) {
+                this.marges.delete(marge);
+              } else {
+                const parts = marge.split(',');
+                parts[0] = '0';
+                const key = parts.join(',');
+                newMarges.set(key, <number>this.marges.get(marge));
+                this.marges.delete(marge);
+              }
             }
           }
           this.marges = newMarges;
@@ -84,6 +93,7 @@ export class AppComponent implements OnInit {
   downloadImage(index: number, list: string[]){
     const zoomTmp = this.zoom;
     this.zoom = 1;
+    this.loading = true;
     setTimeout(() => {
       html2canvas(this.screen.get(index)!.nativeElement, {
         backgroundColor: null
@@ -94,6 +104,7 @@ export class AppComponent implements OnInit {
         this.downloadLink.nativeElement.click();
         setTimeout(() => {
           this.zoom = zoomTmp;
+          this.loading = false;
         });
       });
     }, 100);
@@ -103,6 +114,7 @@ export class AppComponent implements OnInit {
     const zoomTmp = this.zoom;
     this.zoom = 1;
     this.displayButtons = false;
+    this.loading = true;
     setTimeout(() => {
       html2canvas(this.scrollDiv.nativeElement, {
       }).then(canvas => {
@@ -113,6 +125,7 @@ export class AppComponent implements OnInit {
         setTimeout(() => {
           this.zoom = zoomTmp;
           this.displayButtons = true;
+          this.loading = false;
         });
       });
     }, 100);
@@ -218,7 +231,16 @@ export class AppComponent implements OnInit {
     if (location.includes('?')) {
       location = location.substring(0, location.indexOf('?'));
     }
-    window.location.href = location + '?m=' + this.lettres + '&i=' + (index + 1);
+    let marges = '';
+    for (let marge of this.marges.keys()) {
+      if (marge.startsWith(index + ',')) {
+        const parts = marge.split(',');
+        parts[0] = '0';
+        const key = parts.join(',');
+        marges += key + '=' + this.marges.get(marge) + '|';
+      }
+    }
+    window.location.href = location + '?m=' + this.lettres + '&i=' + (index + 1) + '&p=' + marges;
   }
 
   goBack() {
