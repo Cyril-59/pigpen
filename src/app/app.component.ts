@@ -38,7 +38,8 @@ export class AppComponent implements OnInit {
   zoom: number = 0.5;
   visible = false;
   displayButtons = true;
-  displayLink = true;
+  modeSolo = false;
+  titreSolo = '';
 
   @ViewChild("scroll") private scrollDiv!: ElementRef;
   @ViewChildren('screen') screen!: QueryList<ElementRef>;
@@ -57,7 +58,9 @@ export class AppComponent implements OnInit {
         this.generate();
         const index = params.get('i');
         if (index) {
-          this.displayLink = false;
+          this.zoom = 1;
+          this.titreSolo = 'Marque ' + marque + ' variante ' + index;
+          this.modeSolo = true;
           const newIndex = +index - 1;
           this.doubleArray = this.doubleArray.slice(newIndex, newIndex + 1);
           const newMarges= new Map<string, number>();
@@ -130,7 +133,6 @@ export class AppComponent implements OnInit {
       this.doubleArray.length = 0;
       this.marges.clear();
       this.edits.length = 0;
-      this.displayLink = true;
       let word = this.lettres;
       for (let i = 0; i < this.lettres.length; i++) {
         this.generateForWord(word);
@@ -217,5 +219,9 @@ export class AppComponent implements OnInit {
       location = location.substring(0, location.indexOf('?'));
     }
     window.location.href = location + '?m=' + this.lettres + '&i=' + (index + 1);
+  }
+
+  goBack() {
+    window.location.href = window.location.href.substring(0, window.location.href.indexOf('&'));
   }
 }
