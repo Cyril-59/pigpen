@@ -1,20 +1,30 @@
-import {Component, ElementRef, ViewChild} from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import {
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  Inject,
+  OnInit,
+  QueryList,
+  ViewChild,
+  ViewChildren
+} from '@angular/core';
+import {ActivatedRoute, RouterOutlet} from '@angular/router';
 import {FormsModule} from "@angular/forms";
-import {JsonPipe, NgClass} from "@angular/common";
+import {JsonPipe, NgClass, NgStyle} from "@angular/common";
+import html2canvas from "html2canvas";
+import {switchMap, tap} from "rxjs";
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, FormsModule, NgClass, JsonPipe],
+  imports: [RouterOutlet, FormsModule, NgClass, JsonPipe, NgStyle],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
-export class AppComponent {
-  title = 'pigpen';
+export class AppComponent implements OnInit {
   lettres = '';
   chiffres = '';
-  notShifted = ['S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
+  notShifted = ['S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '_'];
   array: string[] = [];
   doubleArray: string[][] = [];
   positions = new Map<number, string[]>([
@@ -23,13 +33,77 @@ export class AppComponent {
     [4, ["4", "22", "13", "31", "121", "211", "112", "1111"]],
     [5, ["5", "32", "23", "41", "14", "311", "131", "113", "221", "212", "122", "2111", "1211", "1121", "1112", "11111"]]
   ]);
-  coins = new Map<string, number[]>([
-    ['A', [1, 3, 4]], ['B', [1, 2, 3, 4]], ['C', [2, 3, 4]], ['D', [1, 2, 3, 4]], ['E', [1, 2, 3, 4]], ['F', [1, 2, 3, 4]],
-    ['G', [1, 2, 3]], ['H', [1, 2, 3, 4]], ['I', [1, 2, 4]], ['J', [1, 3, 4]], ['K', [1, 2, 3, 4]], ['L', [2, 3, 4]],
-    ['M', [1, 2, 3, 4]], ['N', [1, 2, 3, 4]], ['O', [1, 2, 3, 4]], ['P', [1, 2, 3]], ['Q', [1, 2, 3, 4]], ['R', [1, 2, 4]],
-    ['S', [3, 4]], ['T', [2, 4]], ['U', [1, 2]], ['V', [1, 3]], ['W', [3, 4]], ['X', [2, 4]], ['Y', [1, 2]], ['Z', [1, 3]]
-  ]);
+  marges= new Map<string, number>();
+  edits: boolean[] = [];
+  zoom: number = 0.5;
+  visible = false;
+  displayButtons = true;
+
   @ViewChild("scroll") private scrollDiv!: ElementRef;
+  @ViewChildren('screen') screen!: QueryList<ElementRef>;
+  @ViewChild('canvas') canvas!: ElementRef;
+  @ViewChild('downloadLink') downloadLink!: ElementRef;
+
+  constructor(private route: ActivatedRoute) {
+  }
+
+  ngOnInit() {
+    this.route.queryParamMap.subscribe(params => {
+      const marque = params.get('m');
+      if (marque) {
+        this.lettres = marque;
+        this.generate();
+        const index = params.get('i');
+        if (index) {
+          const newIndex = +index - 1;
+          this.doubleArray = this.doubleArray.slice(newIndex, newIndex + 1);
+          const newMarges= new Map<string, number>();
+          for (let marge of this.marges.keys()) {
+            if (!marge.startsWith(newIndex + ',')) {
+              this.marges.delete(marge);
+            } else {
+              const parts = marge.split(',');
+              parts[0] = '0';
+              const key = parts.join(',');
+              newMarges.set(key, <number>this.marges.get(marge));
+              this.marges.delete(marge);
+            }
+          }
+          this.marges = newMarges;
+        }
+      }
+    })
+  }
+
+  downloadImage(index: number, list: string[]){
+    html2canvas(this.screen.get(index)!.nativeElement, {
+      backgroundColor: null
+    }).then(canvas => {
+      this.canvas.nativeElement.src = canvas.toDataURL();
+      this.downloadLink.nativeElement.href = canvas.toDataURL('image/png');
+      this.downloadLink.nativeElement.download = 'Marque_' + this.lettres + '_' + (index + 1) + '.png';
+      this.downloadLink.nativeElement.click();
+    });
+  }
+
+  downloadAll() {
+    const zoomTmp = this.zoom;
+    this.zoom = 1;
+    this.displayButtons = false;
+    setTimeout(() => {
+      html2canvas(this.scrollDiv.nativeElement, {
+      }).then(canvas => {
+        this.canvas.nativeElement.src = canvas.toDataURL();
+        this.downloadLink.nativeElement.href = canvas.toDataURL('image/png');
+        this.downloadLink.nativeElement.download = 'Marques_' + this.lettres + '.png';
+        this.downloadLink.nativeElement.click();
+        setTimeout(() => {
+          this.zoom = zoomTmp;
+          this.displayButtons = true;
+        });
+      });
+    }, 500);
+  }
 
   fillArray() {
     this.array.length = 0;
@@ -42,35 +116,87 @@ export class AppComponent {
 
   generate() {
     if (this.lettres.length > 1 && this.lettres.length < 6 ) {
+      this.visible = true;
       this.doubleArray.length = 0;
+      this.marges.clear();
+      this.edits.length = 0;
       let word = this.lettres;
       for (let i = 0; i < this.lettres.length; i++) {
         this.generateForWord(word);
         const first = word.charAt(0);
         word = word.substring(1) + first;
       }
-      setTimeout(() => {
+      /*setTimeout(() => {
         this.scrollDiv.nativeElement.scrollIntoView({ behavior: "smooth", block: "start" });
-      })
+      })*/
     }
   }
 
   private generateForWord(letters: string) {
+    let localArray = [];
     for (let position of this.positions.get(letters.length)!) {
-      let localArray = [];
-      let cpt = 0;
+      localArray = [];
+      let currentPosition = 0;
       for (let i of position.split('')) {
-        localArray.push(letters.substring(cpt, cpt + parseInt(i)));
-        cpt += parseInt(i);
+        const subletters = letters.substring(currentPosition, currentPosition + parseInt(i));
+        localArray.push(subletters);
+
+        let letterIndex = 0;
+        for (let subletter of subletters) {
+          const shift = letterIndex > 0 && !this.notShifted.includes(subletter) && !this.notShifted.includes(subletters.charAt(letterIndex - 1));
+          this.marges.set(this.doubleArray.length + ',' + (localArray.length - 1) + ',' + letterIndex, shift ? -33 : 0);
+          letterIndex++
+        }
+
+        currentPosition += parseInt(i);
       }
       this.doubleArray.push(localArray);
+      this.edits.push(false);
     }
+    // Diagonale
+    let cpt = 0;
+    localArray = [];
+    for (let i of letters) {
+      let diag = '';
+      for (let j = 0; j < cpt; j++) {
+        diag += '_';
+        this.marges.set(this.doubleArray.length + ',' + localArray.length + ',' + j, 0);
+      }
+      diag += i;
+      const shift = (diag.length - 1) > 0 && !this.notShifted.includes(i);
+      this.marges.set(this.doubleArray.length + ',' + localArray.length + ',' + (diag.length - 1), shift ? -33 : 0);
+      localArray.push(diag);
+      cpt += 1;
+    }
+    this.doubleArray.push(localArray);
+    this.edits.push(false);
   }
 
   delete(index: number, element: any) {
     element.style.opacity = '0';
     setTimeout(() => {
-      this.doubleArray.splice(index, 1);
+      //this.doubleArray.splice(index, 1);
+      element.style.display = 'none';
     }, 500)
+  }
+
+  deleteEmpty(element: any) {
+    element.style.display = 'none';
+  }
+
+  move(index1: number, index2: number, index3: number, step: number) {
+    const marge = this.marges.get(index1 + ',' + index2 + ',' + index3)!;
+    this.marges.set(index1 + ',' + index2 + ',' + index3, marge + step);
+  }
+
+  toggleEdit(index: number) {
+    this.edits[index] = !this.edits[index];
+  }
+
+  changeZoom(step: number) {
+    const newZoom = this.zoom + step;
+    if (newZoom >= 0.2 && newZoom <= 1) {
+      this.zoom = newZoom;
+    }
   }
 }
