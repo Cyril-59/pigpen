@@ -41,6 +41,7 @@ export class AppComponent implements OnInit {
   modeSolo = false;
   titreSolo = '';
   loading = false;
+  indexSolo: string | null = null;
 
   @ViewChild("scroll") private scrollDiv!: ElementRef;
   @ViewChildren('screen') screen!: QueryList<ElementRef>;
@@ -57,19 +58,21 @@ export class AppComponent implements OnInit {
       if (marque) {
         this.lettres = marque;
         this.generate();
-        const index = params.get('i');
-        if (index) {
+        this.indexSolo = params.get('i');
+        if (this.indexSolo) {
           this.zoom = 1;
-          this.titreSolo = 'Marque ' + marque + ' variante ' + index;
+          this.titreSolo = 'Marque ' + marque + ' variante ' + this.indexSolo;
           this.modeSolo = true;
-          const newIndex = +index - 1;
+          const newIndex = +this.indexSolo - 1;
           this.doubleArray = this.doubleArray.slice(newIndex, newIndex + 1);
           const newMarges= new Map<string, number>();
           const marges = params.get('p');
           if (marges) {
             marges.split('|').forEach(marge => {
-              const parts = marge.split('=');
-              newMarges.set(parts[0], +parts[1]);
+              if (marge) {
+                const parts = marge.split('=');
+                newMarges.set(parts[0], +parts[1]);
+              }
             });
           } else {
             for (let marge of this.marges.keys()) {
@@ -201,7 +204,6 @@ export class AppComponent implements OnInit {
   delete(index: number, element: any) {
     element.style.opacity = '0';
     setTimeout(() => {
-      //this.doubleArray.splice(index, 1);
       element.style.display = 'none';
     }, 500)
   }
@@ -217,6 +219,9 @@ export class AppComponent implements OnInit {
 
   toggleEdit(index: number) {
     this.edits[index] = !this.edits[index];
+    if (this.indexSolo && !this.edits[index]) {
+      this.goToLink(+this.indexSolo - 1);
+    }
   }
 
   changeZoom(step: number) {
@@ -233,11 +238,16 @@ export class AppComponent implements OnInit {
     }
     let marges = '';
     for (let marge of this.marges.keys()) {
-      if (marge.startsWith(index + ',')) {
-        const parts = marge.split(',');
-        parts[0] = '0';
-        const key = parts.join(',');
-        marges += key + '=' + this.marges.get(marge) + '|';
+      if (!this.modeSolo) {
+        if (marge.startsWith(index + ',')) {
+          const parts = marge.split(',');
+          parts[0] = '0';
+          const key = parts.join(',');
+          marges += key + '=' + this.marges.get(marge) + '|';
+        }
+      } else {
+        console.log(marge);
+        marges += marge + '=' + this.marges.get(marge) + '|';
       }
     }
     window.location.href = location + '?m=' + this.lettres + '&i=' + (index + 1) + '&p=' + marges;
