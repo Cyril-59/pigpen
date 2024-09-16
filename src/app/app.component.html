@@ -22,31 +22,8 @@
           </div>
         }
       }
-      <!--<div>
-        Specific positions :
-        <input type="text" [(ngModel)]="chiffres" (ngModelChange)="fillArray()">
-      </div>-->
     </div>
   }
-  <!--<div class="jump"></div>
-  <div>
-    @for (letter of lettres.split(''); track $index;) {
-      <span class="letter {{letter}} marge" [ngClass]="{ 'empty' : letter == '_'}" [title]="letter"></span>
-    }
-  </div>
-  <div class="jump"></div>
-  <div>
-    @for (word of array; track word; let vindex = $index) {
-      <div>{{ word }}</div>
-    }
-    @for (word of array; track word; let vindex = $index) {
-      <div class="line" [ngClass]="{ 'vshift' : vindex > 0}">
-        @for (letter of word.split(''); track $index;) {
-            <span class="letter {{letter}}" [ngClass]="{ 'shift' : $index > 0 && !notShifted.includes(letter) && !notShifted.includes(word.at($index - 1)!), 'empty' : letter == '_'}" [title]="letter"></span>
-        }
-      </div>
-    }
-  </div>-->
   @if (doubleArray.length > 1) {
     <div class="jump"></div>
   }

@@ -1,8 +1,6 @@
 import {
-  ChangeDetectorRef,
   Component,
   ElementRef,
-  Inject,
   OnInit,
   QueryList,
   ViewChild,
@@ -12,7 +10,6 @@ import {ActivatedRoute, RouterOutlet} from '@angular/router';
 import {FormsModule} from "@angular/forms";
 import {JsonPipe, NgClass, NgStyle} from "@angular/common";
 import html2canvas from "html2canvas";
-import {switchMap, tap} from "rxjs";
 
 @Component({
   selector: 'app-root',
@@ -52,7 +49,7 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
-    //?m=ABC&i=1&p=...
+    // Parse query params
     this.route.queryParamMap.subscribe(params => {
       const marque = params.get('m');
       if (marque) {
@@ -103,7 +100,7 @@ export class AppComponent implements OnInit {
       }).then(canvas => {
         this.canvas.nativeElement.src = canvas.toDataURL();
         this.downloadLink.nativeElement.href = canvas.toDataURL('image/png');
-        this.downloadLink.nativeElement.download = 'Marque_' + this.lettres + '_' + (index + 1) + '.png';
+        this.downloadLink.nativeElement.download = 'Marque_' + this.lettres + '_' + (this.indexSolo ? this.indexSolo : index + 1) + '.png';
         this.downloadLink.nativeElement.click();
         setTimeout(() => {
           this.zoom = zoomTmp;
@@ -132,15 +129,6 @@ export class AppComponent implements OnInit {
         });
       });
     }, 100);
-  }
-
-  fillArray() {
-    this.array.length = 0;
-    let cpt = 0;
-    for (let i of this.chiffres.split('')) {
-      this.array.push(this.lettres.substring(cpt, cpt + parseInt(i)));
-      cpt += parseInt(i);
-    }
   }
 
   generate() {
@@ -246,7 +234,6 @@ export class AppComponent implements OnInit {
           marges += key + '=' + this.marges.get(marge) + '|';
         }
       } else {
-        console.log(marge);
         marges += marge + '=' + this.marges.get(marge) + '|';
       }
     }
