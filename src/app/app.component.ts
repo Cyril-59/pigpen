@@ -39,6 +39,8 @@ export class AppComponent implements OnInit {
   titreSolo = '';
   loading = false;
   indexSolo: string | null = null;
+  filtre = '';
+  filtreVisible = false;
 
   @ViewChild("scroll") private scrollDiv!: ElementRef;
   @ViewChildren('screen') screen!: QueryList<ElementRef>;
@@ -54,46 +56,58 @@ export class AppComponent implements OnInit {
       const marque = params.get('m');
       if (marque) {
         this.lettres = marque;
-        this.generate();
-        this.indexSolo = params.get('i');
-        if (this.indexSolo) {
-          this.zoom = 1;
-          this.titreSolo = 'Marque ' + marque + ' variante ' + this.indexSolo;
-          this.modeSolo = true;
-          const newIndex = +this.indexSolo - 1;
-          this.doubleArray = this.doubleArray.slice(newIndex, newIndex + 1);
-          const newMarges= new Map<string, number>();
-          const marges = params.get('p');
-          if (marges) {
-            marges.split('|').forEach(marge => {
-              if (marge) {
-                const parts = marge.split('=');
-                newMarges.set(parts[0], +parts[1]);
-              }
-            });
-          } else {
-            for (let marge of this.marges.keys()) {
-              if (!marge.startsWith(newIndex + ',')) {
-                this.marges.delete(marge);
-              } else {
-                const parts = marge.split(',');
-                parts[0] = '0';
-                const key = parts.join(',');
-                newMarges.set(key, <number>this.marges.get(marge));
-                this.marges.delete(marge);
+        this.loading = true;
+        setTimeout(() => {
+          this.generate();
+          this.indexSolo = params.get('i');
+          if (this.indexSolo) {
+            this.zoom = 1;
+            this.titreSolo = 'Marque ' + marque + ' variante ' + this.indexSolo;
+            this.modeSolo = true;
+            const newIndex = +this.indexSolo - 1;
+            this.doubleArray = this.doubleArray.slice(newIndex, newIndex + 1);
+            const newMarges = new Map<string, number>();
+            const marges = params.get('p');
+            if (marges) {
+              marges.split('|').forEach(marge => {
+                if (marge) {
+                  const parts = marge.split('=');
+                  newMarges.set(parts[0], +parts[1]);
+                }
+              });
+            } else {
+              for (let marge of this.marges.keys()) {
+                if (!marge.startsWith(newIndex + ',')) {
+                  this.marges.delete(marge);
+                } else {
+                  const parts = marge.split(',');
+                  parts[0] = '0';
+                  const key = parts.join(',');
+                  newMarges.set(key, <number>this.marges.get(marge));
+                  this.marges.delete(marge);
+                }
               }
             }
+            this.marges = newMarges;
           }
-          this.marges = newMarges;
-        }
+        });
       }
     })
   }
 
-  downloadImage(index: number, list: string[]){
+  downloadImage(index: number, scale: boolean){
     const zoomTmp = this.zoom;
     this.zoom = 1;
     this.loading = true;
+    const width = this.screen.get(index)!.nativeElement.offsetWidth;
+    const height = this.screen.get(index)!.nativeElement.offsetHeight;
+    if (scale) {
+      if (width > height) {
+        this.screen.get(index)!.nativeElement.style.transform = 'scale(' + 200 / width + ')';
+      } else {
+        this.screen.get(index)!.nativeElement.style.transform = 'scale(' + 200 / height + ')';
+      }
+    }
     setTimeout(() => {
       html2canvas(this.screen.get(index)!.nativeElement, {
         backgroundColor: null
@@ -105,6 +119,9 @@ export class AppComponent implements OnInit {
         setTimeout(() => {
           this.zoom = zoomTmp;
           this.loading = false;
+          if (scale) {
+            this.screen.get(index)!.nativeElement.style.removeProperty('transform');
+          }
         });
       });
     }, 100);
@@ -115,9 +132,18 @@ export class AppComponent implements OnInit {
     this.zoom = 1;
     this.displayButtons = false;
     this.loading = true;
+    const nbElements = this.getTotalNumberDisplayed();
+    if (nbElements < 50) {
+      this.scrollDiv.nativeElement.classList.add("scale3");
+    } else if (nbElements < 1000) {
+      this.scrollDiv.nativeElement.classList.add("scale4");
+    } else {
+      this.scrollDiv.nativeElement.classList.add("scale5");
+    }
+
     setTimeout(() => {
       html2canvas(this.scrollDiv.nativeElement, {
-      }).then(canvas => {
+      }).then((canvas: HTMLCanvasElement) => {
         this.canvas.nativeElement.src = canvas.toDataURL();
         this.downloadLink.nativeElement.href = canvas.toDataURL('image/png');
         this.downloadLink.nativeElement.download = 'Marques_' + this.lettres + '.png';
@@ -126,26 +152,55 @@ export class AppComponent implements OnInit {
           this.zoom = zoomTmp;
           this.displayButtons = true;
           this.loading = false;
+          this.scrollDiv.nativeElement.classList.remove("scale3");
+          this.scrollDiv.nativeElement.classList.remove("scale4");
+          this.scrollDiv.nativeElement.classList.remove("scale5");
         });
       });
     }, 100);
   }
 
+  permut(string: string): string[] {
+    if (string.length < 2) return [string]; // This is our break condition
+
+    var permutations = []; // This array will hold our permutations
+    for (var i = 0; i < string.length; i++) {
+      var char = string[i];
+
+      // Cause we don't want any duplicates:
+      if (string.indexOf(char) != i) // if char was used already
+        continue; // skip it this time
+
+      var remainingString = string.slice(0, i) + string.slice(i + 1, string.length); //Note: you can concat Strings via '+' in JS
+
+      for (var subPermutation of this.permut(remainingString))
+        permutations.push(char + subPermutation)
+    }
+    return permutations;
+  }
+
+  generateWithLoading() {
+    this.loading = true;
+    setTimeout(() => {
+      this.generate();
+    });
+  }
+
   generate() {
     if (this.lettres.length > 1 && this.lettres.length < 6 ) {
+      this.lettres = this.lettres.split("").sort().join("");
       this.visible = true;
       this.doubleArray.length = 0;
       this.marges.clear();
       this.edits.length = 0;
-      let word = this.lettres;
-      for (let i = 0; i < this.lettres.length; i++) {
-        this.generateForWord(word);
-        const first = word.charAt(0);
-        word = word.substring(1) + first;
+      this.filtre = '';
+      const array = this.permut(this.lettres);
+      for (let permutation of array) {
+        this.generateForWord(permutation);
       }
-      /*setTimeout(() => {
-        this.scrollDiv.nativeElement.scrollIntoView({ behavior: "smooth", block: "start" });
-      })*/
+      setTimeout(() => {
+        this.loading = false;
+      });
     }
   }
 
@@ -242,5 +297,20 @@ export class AppComponent implements OnInit {
 
   goBack() {
     window.location.href = window.location.href.substring(0, window.location.href.indexOf('&'));
+  }
+
+  getTotalNumberDisplayed() {
+    if (this.filtre) {
+      return this.doubleArray.filter(d => d.join('').replaceAll('_', '').includes(this.filtre)).length;
+    } else {
+      return this.doubleArray.length
+    }
+  }
+
+  toggleFilter() {
+    if (this.filtreVisible) {
+      this.filtre = '';
+    }
+    this.filtreVisible = !this.filtreVisible
   }
 }

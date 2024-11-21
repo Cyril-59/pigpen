@@ -11,7 +11,7 @@ input {
 
 .menu {
   display: flex;
-  width: 60%;
+  width: 80%;
   justify-content: space-evenly;
   font-size: 1.25em;
 }
@@ -246,3 +246,18 @@ input {
   animation: l1 1s infinite;
 }
 @keyframes l1 {to{transform: rotate(.5turn)}}
+
+.scale3 {
+  width: 4000px;
+  transform: scale(0.5);
+}
+
+.scale4 {
+  width: 16000px;
+  transform: scale(0.25);
+}
+
+.scale5 {
+  width: 48000px;
+  transform: scale(0.125);
+}

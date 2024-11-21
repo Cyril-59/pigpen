@@ -8,17 +8,27 @@
     <div class="menu">
       <div>
         <span>Entrez vos initiales : </span>
-        <input type="text" [(ngModel)]="lettres" (ngModelChange)="lettres = lettres.toUpperCase(); doubleArray.length = 0; array.length = 0; chiffres = ''; visible = false;">
+        <input type="text" [(ngModel)]="lettres" (ngModelChange)="lettres = lettres.toUpperCase(); doubleArray.length = 0; array.length = 0; chiffres = ''; visible = false;" style="width: 4em">
       </div>
       @if (lettres.length > 1 && lettres.length < 6) {
-        <button style="font-size: 1em" (click)="generate()" class="start">Générer</button>
+        <button style="font-size: 1em" (click)="generateWithLoading()" class="start">Générer</button>
         @if (visible) {
           <div class="zooms">
-              <svg  style="cursor: pointer" (click)="changeZoom(-0.1)" width="1.5em" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><title>Zoom out</title><path d="M12.9 14.32a8 8 0 1 1 1.41-1.41l5.35 5.33-1.42 1.42-5.33-5.34zM8 14A6 6 0 1 0 8 2a6 6 0 0 0 0 12zM5 7h6v2H5V7z" fill-rule="evenodd"/></svg>
-              <svg style="cursor: pointer" (click)="changeZoom(0.1)" width="1.5em" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><title>Zoom in</title><path d="M12.9 14.32a8 8 0 1 1 1.41-1.41l5.35 5.33-1.42 1.42-5.33-5.34zM8 14A6 6 0 1 0 8 2a6 6 0 0 0 0 12zM7 7V5h2v2h2v2H9v2H7V9H5V7h2z" fill-rule="evenodd"/></svg>
-              <svg class="cursor"
-                   (click)="downloadAll()"
-                   height="1.5em" viewBox="0 0 14 19" width="1.5em" xmlns="http://www.w3.org/2000/svg"><title>Télécharger toutes les marques avec le zoom actuel</title><g fill="none" fill-rule="evenodd" id="Page-1" stroke="none" stroke-width="1"><g fill="#000000" id="Core" transform="translate(-383.000000, -213.000000)"><g id="file-download" transform="translate(383.000000, 213.500000)"><path d="M14,6 L10,6 L10,0 L4,0 L4,6 L0,6 L7,13 L14,6 L14,6 Z M0,15 L0,17 L14,17 L14,15 L0,15 L0,15 Z" id="Shape"/></g></g></g></svg>
+            <svg  style="cursor: pointer" (click)="changeZoom(-0.1)" width="1.5em" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><title>Zoom out</title><path d="M12.9 14.32a8 8 0 1 1 1.41-1.41l5.35 5.33-1.42 1.42-5.33-5.34zM8 14A6 6 0 1 0 8 2a6 6 0 0 0 0 12zM5 7h6v2H5V7z" fill-rule="evenodd"/></svg>
+            <svg style="cursor: pointer" (click)="changeZoom(0.1)" width="1.5em" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><title>Zoom in</title><path d="M12.9 14.32a8 8 0 1 1 1.41-1.41l5.35 5.33-1.42 1.42-5.33-5.34zM8 14A6 6 0 1 0 8 2a6 6 0 0 0 0 12zM7 7V5h2v2h2v2H9v2H7V9H5V7h2z" fill-rule="evenodd"/></svg>
+            <svg class="cursor"
+                 (click)="downloadAll()"
+                 height="1.5em" viewBox="0 0 14 19" width="1.5em" xmlns="http://www.w3.org/2000/svg"><title>Télécharger toutes les marques</title><g fill="none" fill-rule="evenodd" id="Page-1" stroke="none" stroke-width="1"><g fill="#000000" id="Core" transform="translate(-383.000000, -213.000000)"><g id="file-download" transform="translate(383.000000, 213.500000)"><path d="M14,6 L10,6 L10,0 L4,0 L4,6 L0,6 L7,13 L14,6 L14,6 Z M0,15 L0,17 L14,17 L14,15 L0,15 L0,15 Z" id="Shape"/></g></g></g></svg>
+            <svg style="cursor: pointer;" width="1.75em" height="1.75em" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" (click)="toggleFilter()">
+              <title>Filtrer les marques</title>
+              <path d="M14 20.5H10C9.80189 20.4974 9.61263 20.4176 9.47253 20.2775C9.33244 20.1374 9.25259 19.9481 9.25 19.75V12L3.9 4.69C3.81544 4.58007 3.76395 4.44832 3.75155 4.31018C3.73915 4.17204 3.76636 4.03323 3.83 3.91C3.89375 3.78712 3.98984 3.68399 4.10792 3.61173C4.226 3.53947 4.36157 3.50084 4.5 3.5H19.5C19.6384 3.50084 19.774 3.53947 19.8921 3.61173C20.0101 3.68399 20.1062 3.78712 20.17 3.91C20.2336 4.03323 20.2608 4.17204 20.2484 4.31018C20.236 4.44832 20.1846 4.58007 20.1 4.69L14.75 12V19.75C14.7474 19.9481 14.6676 20.1374 14.5275 20.2775C14.3874 20.4176 14.1981 20.4974 14 20.5ZM10.75 19H13.25V11.75C13.2492 11.5907 13.302 11.4357 13.4 11.31L18 5H6L10.62 11.31C10.718 11.4357 10.7708 11.5907 10.77 11.75L10.75 19Z" fill="#000000"/>
+            </svg>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5em">
+            @if (filtreVisible) {
+              <input type="text" [(ngModel)]="filtre" (ngModelChange)="filtre = filtre.toUpperCase();" style="width: 4em">
+              {{ getTotalNumberDisplayed() }} / {{ this.doubleArray.length }}
+            }
           </div>
         }
       }
@@ -29,7 +39,7 @@
   }
   <div [class]="!modeSolo ? 'generate' : ''" #scroll [ngStyle]="{ 'zoom': zoom, '-moz-transform': 'scale(' + zoom + ')', '-moz-transform-origin': 'top' }">
     @for (list of doubleArray; track list; let dindex = $index) {
-      <div class="subgenerate" id="word{{dindex}}">
+      <div class="subgenerate jumpwhite" id="word{{dindex}}" [ngStyle]="{ 'display': filtre ? (list.join('').replaceAll('_', '').includes(filtre) ? 'block' : 'none') : 'block'}">
         <div class="word">
           @if (!modeSolo) {
             <div style="font-size: 3em">{{dindex + 1}}</div>
@@ -87,9 +97,14 @@
                  [ngStyle]="{ 'filter': 'opacity(' + (edits[dindex] ? '.5' : '1') + ')' }"
                  (click)="toggleEdit(dindex)"
                  height="2.5em" viewBox="0 0 18 18" width="2.5em" xmlns="http://www.w3.org/2000/svg"><title>Editer la marque</title><g fill="none" fill-rule="evenodd" id="Page-1" stroke="none" stroke-width="1"><g fill="#000000" id="Core" transform="translate(-213.000000, -129.000000)"><g id="create" transform="translate(213.000000, 129.000000)"><path d="M0,14.2 L0,18 L3.8,18 L14.8,6.9 L11,3.1 L0,14.2 L0,14.2 Z M17.7,4 C18.1,3.6 18.1,3 17.7,2.6 L15.4,0.3 C15,-0.1 14.4,-0.1 14,0.3 L12.2,2.1 L16,5.9 L17.7,4 L17.7,4 Z" id="Shape"/></g></g></g></svg>
+            @if (modeSolo) {
+              <svg class="cursor"
+                   (click)="downloadImage(dindex, true)"
+                   height="1.5em" viewBox="0 0 14 19" width="3em" xmlns="http://www.w3.org/2000/svg"><title>Télécharger la marque en petit</title><g fill="none" fill-rule="evenodd" id="Page-1" stroke="none" stroke-width="1"><g fill="#000000" id="Core" transform="translate(-383.000000, -213.000000)"><g id="file-download" transform="translate(383.000000, 213.500000)"><path d="M14,6 L10,6 L10,0 L4,0 L4,6 L0,6 L7,13 L14,6 L14,6 Z M0,15 L0,17 L14,17 L14,15 L0,15 L0,15 Z" id="Shape"/></g></g></g></svg>
+            }
             <svg class="cursor"
-                 (click)="downloadImage(dindex, list)"
-                 height="3em" viewBox="0 0 14 19" width="3em" xmlns="http://www.w3.org/2000/svg"><title>Télécharger la marque</title><g fill="none" fill-rule="evenodd" id="Page-1" stroke="none" stroke-width="1"><g fill="#000000" id="Core" transform="translate(-383.000000, -213.000000)"><g id="file-download" transform="translate(383.000000, 213.500000)"><path d="M14,6 L10,6 L10,0 L4,0 L4,6 L0,6 L7,13 L14,6 L14,6 Z M0,15 L0,17 L14,17 L14,15 L0,15 L0,15 Z" id="Shape"/></g></g></g></svg>
+                 (click)="downloadImage(dindex, false)"
+                 height="3em" viewBox="0 0 14 19" width="3em" xmlns="http://www.w3.org/2000/svg"><title>Télécharger la marque en taille originale</title><g fill="none" fill-rule="evenodd" id="Page-1" stroke="none" stroke-width="1"><g fill="#000000" id="Core" transform="translate(-383.000000, -213.000000)"><g id="file-download" transform="translate(383.000000, 213.500000)"><path d="M14,6 L10,6 L10,0 L4,0 L4,6 L0,6 L7,13 L14,6 L14,6 Z M0,15 L0,17 L14,17 L14,15 L0,15 L0,15 Z" id="Shape"/></g></g></g></svg>
             @if (!modeSolo) {
               <svg class="cursor"
                    (click)="goToLink(dindex)"
@@ -102,7 +117,6 @@
           </div>
         }
       </div>
-      <div class="jumpwhite"></div>
     }
   </div>
 </div>
