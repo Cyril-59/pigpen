@@ -41,6 +41,7 @@ export class AppComponent implements OnInit {
   indexSolo: string | null = null;
   filtre = '';
   filtreVisible = false;
+  nbDelete = 0;
 
   @ViewChild("scroll") private scrollDiv!: ElementRef;
   @ViewChildren('screen') screen!: QueryList<ElementRef>;
@@ -194,6 +195,7 @@ export class AppComponent implements OnInit {
       this.marges.clear();
       this.edits.length = 0;
       this.filtre = '';
+      this.nbDelete = 0;
       const array = this.permut(this.lettres);
       for (let permutation of array) {
         this.generateForWord(permutation);
@@ -300,8 +302,8 @@ export class AppComponent implements OnInit {
   }
 
   getTotalNumberDisplayed() {
-    if (this.filtre) {
-      return this.doubleArray.filter(d => d.join('').replaceAll('_', '').includes(this.filtre)).length;
+    if (this.filtreVisible) {
+      return this.doubleArray.filter(d => d.join('').replaceAll('_', '').includes(this.filtre)).length - this.nbDelete;
     } else {
       return this.doubleArray.length
     }
