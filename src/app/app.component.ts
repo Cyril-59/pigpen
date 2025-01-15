@@ -42,7 +42,10 @@ export class AppComponent implements OnInit {
   filtre = '';
   filtreVisible = false;
   nbDelete = 0;
+  nbByPage = 100;
+  currentPage = 0;
 
+  @ViewChild("body") private bodyDiv!: ElementRef;
   @ViewChild("scroll") private scrollDiv!: ElementRef;
   @ViewChildren('screen') screen!: QueryList<ElementRef>;
   @ViewChild('canvas') canvas!: ElementRef;
@@ -133,7 +136,7 @@ export class AppComponent implements OnInit {
     this.zoom = 1;
     this.displayButtons = false;
     this.loading = true;
-    const nbElements = this.getTotalNumberDisplayed();
+    const nbElements = Math.min(this.getTotalNumberDisplayed(), this.nbByPage);
     if (nbElements < 50) {
       this.scrollDiv.nativeElement.classList.add("scale3");
     } else if (nbElements < 1000) {
@@ -196,6 +199,7 @@ export class AppComponent implements OnInit {
       this.edits.length = 0;
       this.filtre = '';
       this.nbDelete = 0;
+      this.currentPage = 0;
       const array = this.permut(this.lettres);
       for (let permutation of array) {
         this.generateForWord(permutation);
@@ -271,7 +275,7 @@ export class AppComponent implements OnInit {
 
   changeZoom(step: number) {
     const newZoom = this.zoom + step;
-    if (newZoom >= 0.2 && newZoom <= 1) {
+    if (newZoom >= 0.3 && newZoom <= 1) {
       this.zoom = newZoom;
     }
   }
@@ -314,5 +318,41 @@ export class AppComponent implements OnInit {
       this.filtre = '';
     }
     this.filtreVisible = !this.filtreVisible
+  }
+
+  getNbPages() {
+    return Math.ceil(this.getTotalNumberDisplayed() / this.nbByPage);
+  }
+
+  scrollToTop() {
+    this.bodyDiv.nativeElement.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  nextPage() {
+    this.currentPage = this.currentPage + 1 < this.getNbPages() ? this.currentPage + 1 : this.currentPage;
+    setTimeout(() => {
+      this.scrollToTop();
+    });
+  }
+
+  previousPage() {
+    this.currentPage = this.currentPage > 0 ? this.currentPage - 1 : this.currentPage;
+    setTimeout(() => {
+      this.scrollToTop();
+    });
+  }
+
+  firstPage() {
+    this.currentPage = 0;
+    setTimeout(() => {
+      this.scrollToTop();
+    });
+  }
+
+  lastPage() {
+    this.currentPage = this.getNbPages() - 1;
+    setTimeout(() => {
+      this.scrollToTop();
+    });
   }
 }

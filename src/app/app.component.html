@@ -1,4 +1,4 @@
-<div class="body">
+<div #body class="body">
   @if (!modeSolo) {
     <h1>Générateur de marques</h1>
   } @else {
@@ -14,32 +14,43 @@
         <button style="font-size: 1em" (click)="generateWithLoading()" class="start">Générer</button>
         @if (visible) {
           <div class="zooms">
-            <svg  style="cursor: pointer" (click)="changeZoom(-0.1)" width="1.5em" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><title>Zoom out</title><path d="M12.9 14.32a8 8 0 1 1 1.41-1.41l5.35 5.33-1.42 1.42-5.33-5.34zM8 14A6 6 0 1 0 8 2a6 6 0 0 0 0 12zM5 7h6v2H5V7z" fill-rule="evenodd"/></svg>
-            <svg style="cursor: pointer" (click)="changeZoom(0.1)" width="1.5em" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><title>Zoom in</title><path d="M12.9 14.32a8 8 0 1 1 1.41-1.41l5.35 5.33-1.42 1.42-5.33-5.34zM8 14A6 6 0 1 0 8 2a6 6 0 0 0 0 12zM7 7V5h2v2h2v2H9v2H7V9H5V7h2z" fill-rule="evenodd"/></svg>
-            <svg class="cursor"
-                 (click)="downloadAll()"
-                 height="1.5em" viewBox="0 0 14 19" width="1.5em" xmlns="http://www.w3.org/2000/svg"><title>Télécharger toutes les marques</title><g fill="none" fill-rule="evenodd" id="Page-1" stroke="none" stroke-width="1"><g fill="#000000" id="Core" transform="translate(-383.000000, -213.000000)"><g id="file-download" transform="translate(383.000000, 213.500000)"><path d="M14,6 L10,6 L10,0 L4,0 L4,6 L0,6 L7,13 L14,6 L14,6 Z M0,15 L0,17 L14,17 L14,15 L0,15 L0,15 Z" id="Shape"/></g></g></g></svg>
-            <svg style="cursor: pointer;" width="1.75em" height="1.75em" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" (click)="toggleFilter()">
-              <title>Filtrer les marques</title>
-              <path d="M14 20.5H10C9.80189 20.4974 9.61263 20.4176 9.47253 20.2775C9.33244 20.1374 9.25259 19.9481 9.25 19.75V12L3.9 4.69C3.81544 4.58007 3.76395 4.44832 3.75155 4.31018C3.73915 4.17204 3.76636 4.03323 3.83 3.91C3.89375 3.78712 3.98984 3.68399 4.10792 3.61173C4.226 3.53947 4.36157 3.50084 4.5 3.5H19.5C19.6384 3.50084 19.774 3.53947 19.8921 3.61173C20.0101 3.68399 20.1062 3.78712 20.17 3.91C20.2336 4.03323 20.2608 4.17204 20.2484 4.31018C20.236 4.44832 20.1846 4.58007 20.1 4.69L14.75 12V19.75C14.7474 19.9481 14.6676 20.1374 14.5275 20.2775C14.3874 20.4176 14.1981 20.4974 14 20.5ZM10.75 19H13.25V11.75C13.2492 11.5907 13.302 11.4357 13.4 11.31L18 5H6L10.62 11.31C10.718 11.4357 10.7708 11.5907 10.77 11.75L10.75 19Z" fill="#000000"/>
-            </svg>
+            <img class="cursor" (click)="changeZoom(-0.1)" title="Zoom out" width="40px" height="40px" src="zoomout.svg" alt="zoom-out"/>
+            <img class="cursor" (click)="changeZoom(0.1)" title="Zoom in" width="40px" height="40px" src="zoomin.svg" alt="zoom-out"/>
+            <img class="cursor" (click)="downloadAll()" title="Télécharger toutes les marques de la page" width="40px" height="40px" src="download.svg" alt="download all"/>
+            @if (!filtreVisible) {
+              <img class="cursor" title="Filtrer les marques" (click)="toggleFilter()" width="40px" height="40px" src="filter.svg" alt="filter"/>
+            } @else {
+              <img class="cursor" title="Supprimer le filtre" (click)="toggleFilter()" width="40px" height="40px" src="filterslash.svg" alt="unfilter"/>
+            }
           </div>
           <div style="display: flex; align-items: center; gap: 0.5em">
             @if (filtreVisible) {
+              Filtre :
               <input type="text" [(ngModel)]="filtre" (ngModelChange)="filtre = filtre.toUpperCase();" style="width: 4em">
-              {{ getTotalNumberDisplayed() }} / {{ this.doubleArray.length }}
+              Affichés : {{ getTotalNumberDisplayed() }} / {{ this.doubleArray.length }}
+            } @else {
+              Taille de page :
+              <input type="number" [(ngModel)]="nbByPage" style="width: 4em">
+              Total : {{ this.doubleArray.length }}
             }
           </div>
         }
       }
     </div>
   }
-  @if (doubleArray.length > 1) {
-    <div class="jump"></div>
+  @if (filtre.length < 2 && doubleArray.length > 1 && getNbPages() > 1) {
+    <div [ngStyle]="{ 'display': 'flex', 'justify-content': 'center', 'gap': '0 1em', 'align-items': 'center', 'font-size': 'x-large', 'margin-bottom': '.5em'}">
+      <img class="cursor" title="Première page" (click)="currentPage = currentPage = 0;" width="30px" height="30px" src="first.svg" alt="first page"/>
+      <img class="cursor" title="Page précédente" (click)="currentPage = currentPage > 0 ? currentPage - 1 : currentPage;" width="30px" height="30px" src="previous.svg" alt="previous page"/>
+      Page {{ currentPage + 1 }} / {{ getNbPages() }}
+      <img class="cursor" title="Page suivante" (click)="currentPage = currentPage + 1 < getNbPages() ? currentPage + 1 : currentPage;" width="30px" height="30px" src="next.svg" alt="next page"/>
+      <img class="cursor" title="Dernière page" (click)="currentPage = getNbPages() - 1;" width="30px" height="30px" src="last.svg" alt="last page"/>
+    </div>
   }
-  <div [class]="!modeSolo ? 'generate' : ''" #scroll [ngStyle]="{ 'zoom': zoom, '-moz-transform': 'scale(' + zoom + ')', '-moz-transform-origin': 'top' }">
+  <div [class]="!modeSolo ? 'generate' : ''" #scroll [ngStyle]="{ 'zoom': zoom}">
     @for (list of doubleArray; track list; let dindex = $index) {
-      <div class="subgenerate jumpwhite" id="word{{dindex}}" [ngStyle]="{ 'display': filtre ? (list.join('').replaceAll('_', '').includes(filtre) ? 'flex' : 'none') : 'flex'}">
+      @if(filtre.length < 2 && dindex >= currentPage * nbByPage && dindex < ((currentPage + 1) * nbByPage) || (filtre.length > 1 && list.join('').replaceAll('_', '').includes(filtre))) {
+        <div class="subgenerate jumpwhite" id="word{{dindex}}">
         <div class="word">
           @if (!modeSolo) {
             <div style="font-size: 3em">{{dindex + 1}}</div>
@@ -50,7 +61,7 @@
             }
           </div>
           @if (displayButtons && !modeSolo) {
-            <svg class="cursor" (click)="delete(dindex, scroll.querySelector('#word' + dindex)); nbDelete = nbDelete + 1" height="3em" id="Layer_1" viewBox="0 0 512 512" width="3em" xml:space="preserve" xmlns="http://www.w3.org/2000/svg"><title>Supprimer la marque</title><path d="M443.6,387.1L312.4,255.4l131.5-130c5.4-5.4,5.4-14.2,0-19.6l-37.4-37.6c-2.6-2.6-6.1-4-9.8-4c-3.7,0-7.2,1.5-9.8,4  L256,197.8L124.9,68.3c-2.6-2.6-6.1-4-9.8-4c-3.7,0-7.2,1.5-9.8,4L68,105.9c-5.4,5.4-5.4,14.2,0,19.6l131.5,130L68.4,387.1  c-2.6,2.6-4.1,6.1-4.1,9.8c0,3.7,1.4,7.2,4.1,9.8l37.4,37.6c2.7,2.7,6.2,4.1,9.8,4.1c3.5,0,7.1-1.3,9.8-4.1L256,313.1l130.7,131.1  c2.7,2.7,6.2,4.1,9.8,4.1c3.5,0,7.1-1.3,9.8-4.1l37.4-37.6c2.6-2.6,4.1-6.1,4.1-9.8C447.7,393.2,446.2,389.7,443.6,387.1z"/></svg>
+            <img class="cursor" (click)="delete(dindex, scroll.querySelector('#word' + dindex)); nbDelete = nbDelete + 1" width="70px" height="70px" src="close.svg" alt="close"/>
           }
         </div>
         <div #screen>
@@ -63,28 +74,13 @@
                       [title]="letter"
                       [ngStyle]="{ 'margin-left': marges.get(dindex + ',' + vindex + ',' + windex) + 'px', 'position': 'relative'}">
                   @if (edits[dindex]) {
-                    <svg style="position: absolute; top: 46%; cursor: pointer; filter: opacity(.5)"
-                         [ngStyle]="{ 'left': !notShifted.includes(letter) ? '20%' : '38%'}"
-                         (click)="move(dindex,vindex,windex, -33)"
-                         height="1.5em" viewBox="0 0 512 512" width="1.5em" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" ><title>Translation gauche</title><polygon points="64.5,256.5 256.5,448.5 256.5,336.5 448.5,336.5 448.5,176.5 256.5,176.5 256.5,64.5 "/></svg>
-                    <svg style="position: absolute; top: 54%; cursor: pointer; filter: opacity(.5)"
-                         [ngStyle]="{ 'left': !notShifted.includes(letter) ? '22%' : '40%'}"
-                         (click)="move(dindex,vindex,windex, -1)"
-                         height="1em" viewBox="0 0 512 512" width="1em" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" ><title>Translation gauche 1 pixel</title><polygon points="64.5,256.5 256.5,448.5 256.5,336.5 448.5,336.5 448.5,176.5 256.5,176.5 256.5,64.5 "/></svg>
-                    <svg style="position: absolute; top: 46%; cursor: pointer; filter: opacity(.5)"
-                         [ngStyle]="{ 'left': !notShifted.includes(letter) ? '69%' : '52%'}"
-                         (click)="move(dindex,vindex,windex, 33)"
-                         height="1.5em" viewBox="0 0 512 512" width="1.5em" xml:space="preserve" xmlns="http://www.w3.org/2000/svg"><title>Translation droite</title><polygon points="448.5,256.5 256.5,64.5 256.5,176.5 64.5,176.5 64.5,336.5 256.5,336.5 256.5,448.5 "/></svg>
-                    <svg style="position: absolute; top: 54%; cursor: pointer; filter: opacity(.5)"
-                         [ngStyle]="{ 'left': !notShifted.includes(letter) ? '71%' : '54%'}"
-                         (click)="move(dindex,vindex,windex, 1)"
-                         height="1em" viewBox="0 0 512 512" width="1em" xml:space="preserve" xmlns="http://www.w3.org/2000/svg"><title>Translation droite 1 pixel</title><polygon points="448.5,256.5 256.5,64.5 256.5,176.5 64.5,176.5 64.5,336.5 256.5,336.5 256.5,448.5 "/></svg>
+                    <img title="Translation gauche" style="position: absolute; top: 45%; cursor: pointer; filter: opacity(.5)" [ngStyle]="{ 'left': !notShifted.includes(letter) ? '20%' : '38%'}" (click)="move(dindex,vindex,windex, -33)" width="30px" height="30px" src="left.svg" alt="left"/>
+                    <img title="Translation gauche 1 pixel" style="position: absolute; top: 55%; cursor: pointer; filter: opacity(.5)" [ngStyle]="{ 'left': !notShifted.includes(letter) ? '22%' : '40%'}" (click)="move(dindex,vindex,windex, -1)" width="20px" height="20px" src="left.svg" alt="small left"/>
+                    <img title="Translation droite" style="position: absolute; top: 45%; cursor: pointer; filter: opacity(.5)" [ngStyle]="{ 'left': !notShifted.includes(letter) ? '69%' : '52%'}" (click)="move(dindex,vindex,windex, 33)" width="30px" height="30px" src="right.svg" alt="right"/>
+                    <img title="Translation droite 1 pixel" style="position: absolute; top: 55%; cursor: pointer; filter: opacity(.5)" [ngStyle]="{ 'left': !notShifted.includes(letter) ? '71%' : '54%'}" (click)="move(dindex,vindex,windex, 1)" width="20px" height="20px" src="right.svg" alt="small right"/>
                   }
                   @if (letter == '_' && edits[dindex]) {
-                    <svg class="cursor"
-                         style="visibility: visible !important; position: absolute; top: 50%; left: 40%; filter: opacity(.5)"
-                         (click)="deleteEmpty(scroll.querySelector('#letter-' + dindex + '-' + vindex + '-' + windex))"
-                         height="1.5em" id="Layer_1" viewBox="0 0 512 512" width="1.5em" xml:space="preserve" xmlns="http://www.w3.org/2000/svg"><title>Supprimer ce bloc</title><path d="M443.6,387.1L312.4,255.4l131.5-130c5.4-5.4,5.4-14.2,0-19.6l-37.4-37.6c-2.6-2.6-6.1-4-9.8-4c-3.7,0-7.2,1.5-9.8,4  L256,197.8L124.9,68.3c-2.6-2.6-6.1-4-9.8-4c-3.7,0-7.2,1.5-9.8,4L68,105.9c-5.4,5.4-5.4,14.2,0,19.6l131.5,130L68.4,387.1  c-2.6,2.6-4.1,6.1-4.1,9.8c0,3.7,1.4,7.2,4.1,9.8l37.4,37.6c2.7,2.7,6.2,4.1,9.8,4.1c3.5,0,7.1-1.3,9.8-4.1L256,313.1l130.7,131.1  c2.7,2.7,6.2,4.1,9.8,4.1c3.5,0,7.1-1.3,9.8-4.1l37.4-37.6c2.6-2.6,4.1-6.1,4.1-9.8C447.7,393.2,446.2,389.7,443.6,387.1z"/></svg>
+                    <img title="Supprimer le bloc" class="cursor" style="visibility: visible !important; position: absolute; top: 50%; left: 40%; filter: opacity(.5)" (click)="deleteEmpty(scroll.querySelector('#letter-' + dindex + '-' + vindex + '-' + windex))" width="30px" height="30px" src="close.svg" alt="delete block"/>
                   }
                 </span>
               }
@@ -93,37 +89,33 @@
         </div>
         @if (displayButtons) {
           <div class="action">
-            <svg class="cursor"
-                 [ngStyle]="{ 'filter': 'opacity(' + (edits[dindex] ? '.5' : '1') + ')' }"
-                 (click)="toggleEdit(dindex)"
-                 height="2.5em" viewBox="0 0 18 18" width="2.5em" xmlns="http://www.w3.org/2000/svg"><title>Editer la marque</title><g fill="none" fill-rule="evenodd" id="Page-1" stroke="none" stroke-width="1"><g fill="#000000" id="Core" transform="translate(-213.000000, -129.000000)"><g id="create" transform="translate(213.000000, 129.000000)"><path d="M0,14.2 L0,18 L3.8,18 L14.8,6.9 L11,3.1 L0,14.2 L0,14.2 Z M17.7,4 C18.1,3.6 18.1,3 17.7,2.6 L15.4,0.3 C15,-0.1 14.4,-0.1 14,0.3 L12.2,2.1 L16,5.9 L17.7,4 L17.7,4 Z" id="Shape"/></g></g></g></svg>
+            <img title="Editer les marges" src="edit.svg" width="80px" height="80px" class="cursor"
+                 [ngStyle]="{ 'filter': 'opacity(' + (edits[dindex] ? '.5' : '1') + ')' }" (click)="toggleEdit(dindex)">
             @if (modeSolo) {
-              <svg class="cursor"
-                   (click)="downloadImage(dindex, true)"
-                   height="1.5em" viewBox="0 0 14 19" width="3em" xmlns="http://www.w3.org/2000/svg"><title>Télécharger la marque en petit</title><g fill="none" fill-rule="evenodd" id="Page-1" stroke="none" stroke-width="1"><g fill="#000000" id="Core" transform="translate(-383.000000, -213.000000)"><g id="file-download" transform="translate(383.000000, 213.500000)"><path d="M14,6 L10,6 L10,0 L4,0 L4,6 L0,6 L7,13 L14,6 L14,6 Z M0,15 L0,17 L14,17 L14,15 L0,15 L0,15 Z" id="Shape"/></g></g></g></svg>
+              <img title="Télécharger la marque en petit" src="download.svg" width="40px" height="40px" class="cursor" (click)="downloadImage(dindex, true)">
             }
-            <svg class="cursor"
-                 (click)="downloadImage(dindex, false)"
-                 height="3em" viewBox="0 0 14 19" width="3em" xmlns="http://www.w3.org/2000/svg"><title>Télécharger la marque en taille originale</title><g fill="none" fill-rule="evenodd" id="Page-1" stroke="none" stroke-width="1"><g fill="#000000" id="Core" transform="translate(-383.000000, -213.000000)"><g id="file-download" transform="translate(383.000000, 213.500000)"><path d="M14,6 L10,6 L10,0 L4,0 L4,6 L0,6 L7,13 L14,6 L14,6 Z M0,15 L0,17 L14,17 L14,15 L0,15 L0,15 Z" id="Shape"/></g></g></g></svg>
+            <img title="Télécharger la marque" src="download.svg" width="80px" height="80px" class="cursor" (click)="downloadImage(dindex, false)">
             @if (!modeSolo) {
-              <svg class="cursor"
-                   (click)="goToLink(dindex)"
-                   height="3em" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <title>Obtenir un lien unique</title>
-                <path d="M13.5442 10.4558C11.8385 8.75022 9.07316 8.75022 7.36753 10.4558L4.27922 13.5442C2.57359 15.2498 2.57359 18.0152 4.27922 19.7208C5.98485 21.4264 8.75021 21.4264 10.4558 19.7208L12 18.1766" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M10.4558 13.5442C12.1614 15.2498 14.9268 15.2498 16.6324 13.5442L19.7207 10.4558C21.4264 8.75021 21.4264 5.98485 19.7207 4.27922C18.0151 2.57359 15.2497 2.57359 13.5441 4.27922L12 5.82338" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
+              <img title="Lien unique de cette marque" src="link.svg" width="80px" height="80px" class="cursor" (click)="goToLink(dindex)">
             }
           </div>
         }
       </div>
+      }
     }
   </div>
+  @if (filtre.length < 2 && doubleArray.length > 1 && getNbPages() > 1) {
+    <div [ngStyle]="{ 'display': 'flex', 'justify-content': 'center', 'gap': '0 1em', 'align-items': 'center', 'font-size': 'x-large', 'margin': '.5em 0'}">
+      <img class="cursor" title="Première page" (click)="firstPage()" width="30px" height="30px" src="first.svg" alt="first page"/>
+      <img class="cursor" title="Page précédente" (click)="previousPage()" width="30px" height="30px" src="previous.svg" alt="previous page"/>
+      Page {{ currentPage + 1 }} / {{ getNbPages() }}
+      <img class="cursor" title="Page suivante" (click)="nextPage()" width="30px" height="30px" src="next.svg" alt="next page"/>
+      <img class="cursor" title="Dernière page" (click)="lastPage()" width="30px" height="30px" src="last.svg" alt="last page"/>
+    </div>
+  }
 </div>
 @if (modeSolo) {
-  <svg class="cursor"
-       (click)="goBack()"
-       height="5em" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><path fill="#000000" d="M224 480h640a32 32 0 1 1 0 64H224a32 32 0 0 1 0-64z"/><path fill="#000000" d="m237.248 512 265.408 265.344a32 32 0 0 1-45.312 45.312l-288-288a32 32 0 0 1 0-45.312l288-288a32 32 0 1 1 45.312 45.312L237.248 512z"/></svg>
+  <img class="cursor" title="Retour aux marques" (click)="goBack()" width="80px" height="80px" src="back.svg" alt="back"/>
 }
 <div id="download" [hidden]="true">
   <img #canvas>
